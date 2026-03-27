@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulación Tormenta: El Rayo con Conector</title>
+<style>
+  body { margin: 0; background-color: #9eb1bb; overflow: hidden; height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; }
+  
+  /* --- TÍTULO PRINCIPAL --- */
+  .titulo-principal {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0033cc;
+    font-size: 28px;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 100;
+    letter-spacing: 4px;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+  }
+
+  /* --- CUADROS DE TEXTO (GUIAS) --- */
+  .cuadro-guia {
+    position: absolute;
+    width: 220px; 
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .guia-alta { top: 20px; left: 20px; border-left: 5px solid #0033cc; }
+  .cuadro-guia li { opacity: 0; }
+  .visible li { animation: aparecerFrase 0.8s forwards; }
+
+  /* Delays Guía 1 */
+  .guia-alta li:nth-child(1) { animation-delay: 1s; }
+  .guia-alta li:nth-child(2) { animation-delay: 4s; }
+  .guia-alta li:nth-child(3) { animation-delay: 7s; }
+  .guia-alta li:nth-child(4) { animation-delay: 10s; }
+  .guia-alta li:nth-child(5) { animation-delay: 13s; }
+
+  @keyframes aparecerFrase {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .guia-baja { bottom: 16vh; left: 20px; border-left: 5px solid #ff3333; opacity: 0; transition: opacity 1.5s; }
+  .guia-baja.visible { opacity: 1; }
+
+  /* --- GUIA 3 --- */
+  .guia-derecha-baja { bottom: 16vh; right: 20px; border-left: 5px solid #ffcc00; opacity: 0; transition: opacity 1.5s; }
+  .guia-derecha-baja.visible { opacity: 1; }
+  .guia-derecha-baja.visible li:nth-child(1) { animation-delay: 0.5s; }
+  .guia-derecha-baja.visible li:nth-child(2) { animation-delay: 2.5s; }
+  .guia-derecha-baja.visible li:nth-child(3) { animation-delay: 4.5s; }
+
+  /* --- LEYENDA --- */
+  .leyenda-derecha { top: 20px; right: 20px; width: 200px; height: 120px; background: #d0d0d0; border-right: 5px solid #444; padding: 10px; box-sizing: border-box; overflow: hidden; }
+  .leyenda-contenedor-items { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .cuadro-guia h4 { margin: 0 0 8px 0; font-size: 11px; border-bottom: 1px solid #999; padding-bottom: 3px; text-transform: uppercase; }
+  .cuadro-guia ul { margin: 0; padding-left: 15px; }
+  .cuadro-guia li { margin-bottom: 5px; }
+  .bold { font-weight: bold; color: #000; }
+  .rojo { color: red; font-weight: bold; }
+  .leyenda-item { display: flex; align-items: center; font-size: 8.5px; }
+  .leyenda-icon { width: 20px; height: 20px; margin-right: 4px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+
+  /* --- PANEL DE CONTROL --- */
+  .control-panel {
+    position: absolute; top: 150px; right: 20px; width: 200px; background: rgba(230, 230, 230, 0.95); padding: 10px; border-radius: 8px;
+    border: 1px solid #999; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3); box-sizing: border-box;
+  }
+  .control-panel h4 { font-size: 10px; margin: 0 0 8px 0; text-align: center; }
+  .btn-generar { width: 100%; background: #fff; border: 2px solid #00c3ff; color: #007bff; padding: 6px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-bottom: 8px; font-size: 9px; }
+  .btn-generar:disabled { border-color: #ccc; color: #999; cursor: not-allowed; }
+  .toggle-btn { background: #ccc; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 9px; }
+  .toggle-btn.active { background: #007bff; color: white; }
+
+  /* --- ESCENARIO --- */
+  .ground { position: absolute; bottom: 0; width: 100%; height: 14vh; background: linear-gradient(to bottom, #8d775f, #6b5a46); z-index: 5; border-top: 3px solid #5a4a3a; }
+  .cloud-container { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); width: 800px; height: 300px; z-index: 10; }
+  .cloud-visual { position: absolute; width: 100%; height: 100%; background: radial-gradient(ellipse at 30% 40%, #777, transparent 75%), radial-gradient(ellipse at 70% 30%, #666, transparent 75%), linear-gradient(to bottom, #888, #555); border-radius: 50% 50% 40% 40% / 60% 60% 35% 35%; filter: blur(25px); opacity: 0.9; }
+  .cloud-svg { position: absolute; width: 100%; height: 100%; z-index: 11; }
+  .full-screen-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 12; pointer-events: none; }
+  
+  .hail-stone { fill: #ffffff; stroke: #aaaaaa; stroke-width: 0.3; animation: hailFall 6s ease-in-out forwards; }
+  @keyframes hailFall { 0% { transform: translateY(0); opacity: 0; } 5% { opacity: 1; } 100% { transform: translateY(var(--stop-y)); opacity: 1; } }
+  .particle-move { animation: rotateParticle 8s linear infinite; transform-origin: center; }
+  @keyframes rotateParticle { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(15px, -45px); } }
+  .charge { font-family: Arial, sans-serif; font-weight: bold; font-size: 26px; pointer-events: none; }
+  .flow { fill: none; stroke: url(#tempGradient); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 15 12; opacity: 0.8; }
+  .flow-L { animation: moveL 2.5s linear infinite; }
+  .flow-R { animation: moveR 2.5s linear infinite; }
+  @keyframes moveL { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 54; } }
+  @keyframes moveR { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -54; } }
+  .proton-c { fill: none; stroke: #ff3333; stroke-width: 1.2; }
+  .proton-t { fill: #ff3333; font-family: Arial; font-weight: bold; font-size: 12px; text-anchor: middle; dominant-baseline: central; }
+  .elec { fill: #0000ff; transition: transform 6s ease-in-out, opacity 5s ease-in-out; }
+  .repelled { transform: translateY(35px); opacity: 0.2; }
+  
+  .rayo-linea { fill: none; stroke: #fff; stroke-width: 6; filter: drop-shadow(0 0 15px #fff); stroke-linecap: round; stroke-linejoin: round; }
+  .conector-positivo { fill: none; stroke: #00e5ff; stroke-width: 3; filter: drop-shadow(0 0 5px #00e5ff); stroke-linecap: round; stroke-linejoin: round; }
+  .trazador-electron { fill: #0000ff; filter: drop-shadow(0 0 2px #fff); }
+  #flashOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 200; }
+
+  /* --- LICENCIA (CENTRADA EN EL SUELO) --- */
+  .licencia-bloque { 
+    position: absolute; bottom: 10px; left: 0; width: 100%; 
+    color: #ccc; font-size: 11px; text-align: center; z-index: 150; 
+  }
+  .licencia-bloque a { color: #fff; text-decoration: none; font-weight: bold; }
+  .licencia-bloque a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div id="flashOverlay"></div>
+<div class="titulo-principal">EL RAYO</div>
+
+<div class="cuadro-guia guia-alta visible">
+  <h4>1. Electrización de la Nube por <span class="rojo">Frotamiento</span></h4>
+  <ul>
+    <li><span class="bold">Subida:</span> El aire cálido eleva gotas y cristales ligeros.</li>
+    <li><span class="bold">Origen:</span> Las gotas se congelan sobre los cristales → nace el <span class="rojo">granizo</span>.</li>
+    <li><span class="bold">Choque:</span> El granizo cae y choca con los cristales que suben.</li>
+    <li><span class="bold">Carga (−):</span> El granizo gana electrones y baja a la base de la nube.</li>
+    <li><span class="bold">Carga (+):</span> Los cristales pierden electrones y suben a la cima.</li>
+  </ul>
+</div>
+
+<div class="cuadro-guia guia-baja" id="guiaInduccion">
+  <h4>2. Electrización del Suelo por <span class="rojo">Inducción</span></h4>
+  <ul>
+    <li><span class="bold">Repulsión:</span> La base negativa de la nube repele los electrones del suelo.</li>
+    <li><span class="bold">Movimiento:</span> Los electrones huyen hacia capas profundas.</li>
+    <li><span class="bold">Superficie:</span> El suelo queda con carga <span class="bold">Positiva (+)</span>.</li>
+  </ul>
+</div>
+
+<div class="cuadro-guia guia-derecha-baja" id="guiaDescarga">
+  <h4>3. La Descarga Eléctrica (<span class="rojo">Rayo</span>)</h4>
+  <ul>
+    <li><span class="bold">Trazador (-):</span> Baja en zigzag buscando el camino más corto.</li>
+    <li><span class="bold">Conector (+):</span> Sube desde el suelo para cerrar el circuito.</li>
+    <li><span class="bold">Encuentro:</span> Al unirse, el rayo sigue la trayectoria de ambos canales.</li>
+  </ul>
+</div>
+
+<div class="cuadro-guia leyenda-derecha">
+  <h4>Leyenda</h4>
+  <div class="leyenda-contenedor-items">
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="14" height="14" viewBox="0 0 6 6"><polygon points="3,0.5 3.5,2 5,2 3.8,3 4.3,4.5 3,3.5 1.7,4.5 2.2,3 1,2 2.5,2" fill="#fff" stroke="#999" stroke-width="0.1" /></svg></div>
+      <span>Cristal</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="#0066ff" /></svg></div>
+      <span>Gota</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#fff" stroke="#aaa" stroke-width="1"/></svg></div>
+      <span>Granizo</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="16" height="16"><circle cx="8" cy="8" r="6" stroke="#ff3333" fill="none" stroke-width="1"/><text x="8" y="11" fill="#ff3333" font-size="9" text-anchor="middle" font-family="Arial" font-weight="bold">+</text></svg></div>
+      <span>Núcleo</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="2.5" fill="#0000ff" /></svg></div>
+      <span>Electrón</span>
+    </div>
+    <div class="leyenda-item">
+      <div class="leyenda-icon"><svg width="20" height="20">
+        <circle cx="6" cy="10" r="5" stroke="url(#tempGradient)" stroke-width="1.5" fill="none" stroke-dasharray="2 1" />
+        <circle cx="14" cy="10" r="5" stroke="url(#tempGradient)" stroke-width="1.5" fill="none" stroke-dasharray="2 1" />
+      </svg></div>
+      <span>Convección</span>
+    </div>
+  </div>
+</div>
+
+<div class="control-panel">
+  <h4 id="panelTitulo">Descargas (Bloqueado)</h4>
+  <button class="btn-generar" id="btnManual" disabled>⚡ GENERAR RAYO</button>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:9px;">
+    <span>Auto-Repetición:</span>
+    <div>
+      <button class="toggle-btn" id="autoOn" disabled>ON</button>
+      <button class="toggle-btn active" id="autoOff" disabled>OFF</button>
+    </div>
+  </div>
+  <button class="btn-generar" style="border-color:#ffc107; color:#856404;" onclick="location.reload()">REINICIAR</button>
+</div>
+
+<div class="ground"></div>
+<svg class="full-screen-svg" id="groundAtoms"></svg>
+
+<div class="cloud-container">
+  <div class="cloud-visual"></div>
+  <svg class="cloud-svg" viewBox="0 0 800 300">
+    <defs>
+      <linearGradient id="tempGradient" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" style="stop-color:rgb(255,50,50);" /><stop offset="100%" style="stop-color:rgb(80,150,255);" /></linearGradient>
+      <polygon id="iceDef" points="3,0 3.7,2.1 6,2.1 4.1,3.4 4.8,5.5 3,4.2 1.2,5.5 1.9,3.4 0,2.1 2.3,2.1" />
+      <clipPath id="cloudBoundary"> <ellipse cx="400" cy="145" rx="390" ry="140" /> </clipPath>
+    </defs>
+    <g id="particleLayer" clip-path="url(#cloudBoundary)"></g>
+    <g id="chargeLayer" clip-path="url(#cloudBoundary)"></g>
+    <g id="hailLayer" clip-path="url(#cloudBoundary)"></g>
+    <ellipse cx="260" cy="150" rx="130" ry="110" class="flow flow-L" />
+    <ellipse cx="540" cy="150" rx="130" ry="110" class="flow flow-R" />
+  </svg>
+</div>
+
+<div class="licencia-bloque">
+  <p>Author: <strong>EAG1964</strong> | 2026 | <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es" target="_blank">License CC BY-NC-SA 4.0</a></p>
+</div>
+
+<script>
+  const svgNS = "http://www.w3.org/2000/svg";
+  const pLayer = document.getElementById('particleLayer');
+  const hLayer = document.getElementById('hailLayer');
+  const cLayer = document.getElementById('chargeLayer');
+  const gLayer = document.getElementById('groundAtoms');
+  let rayoActivo = false;
+  let autoId = null;
+
+  function drawGroundAtoms() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const yBase = height - (height * 0.11);
+    for (let x = 40; x < width; x += 70) {
+      let circ = document.createElementNS(svgNS, "circle");
+      circ.setAttribute("cx", x); circ.setAttribute("cy", yBase); circ.setAttribute("r", "9"); circ.setAttribute("class", "proton-c");
+      gLayer.appendChild(circ);
+      let txt = document.createElementNS(svgNS, "text");
+      txt.setAttribute("x", x); txt.setAttribute("y", yBase); txt.setAttribute("class", "proton-t"); txt.textContent = "+";
+      gLayer.appendChild(txt);
+      for (let i = 0; i < 5; i++) {
+        let e = document.createElementNS(svgNS, "circle");
+        let angle = (i / 5) * Math.PI * 2;
+        e.setAttribute("cx", x + Math.cos(angle) * 15); e.setAttribute("cy", yBase + Math.sin(angle) * 15); e.setAttribute("r", "1.5"); e.setAttribute("class", "elec");
+        gLayer.appendChild(e);
+      }
+    }
+  }
+  drawGroundAtoms();
+
+  for(let i=0; i<600; i++) {
+    let g = document.createElementNS(svgNS, "g"); g.setAttribute("class", "particle-move"); g.style.animationDelay = -(Math.random() * 8) + "s";
+    let p = (i % 2 === 0) ? document.createElementNS(svgNS, "use") : document.createElementNS(svgNS, "circle");
+    if(i % 2 === 0) {
+      p.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#iceDef"); p.setAttribute("x", Math.random() * 800); p.setAttribute("y", Math.random() * 300); p.setAttribute("fill", "#fff"); p.setAttribute("opacity", "0.6");
+    } else {
+      p.setAttribute("cx", Math.random() * 800); p.setAttribute("cy", Math.random() * 300); p.setAttribute("r", "3"); p.setAttribute("fill", "#0066ff"); p.setAttribute("opacity", "0.5");
+    }
+    g.appendChild(p); pLayer.appendChild(g);
+  }
+
+  setInterval(() => {
+    let birthX = 100 + Math.random() * 600; let birthY = 40 + Math.random() * 60; let rx = 390; let ry = 140; let dx = Math.abs(400 - birthX);
+    let yRel = Math.sqrt((1 - (dx*dx)/(rx*rx)) * (ry*ry)); let yStop = 145 + yRel - (15 + Math.random() * 40); 
+    let h = document.createElementNS(svgNS, "circle"); h.setAttribute("cx", birthX); h.setAttribute("cy", birthY); h.setAttribute("r", "3.5"); h.setAttribute("class", "hail-stone"); h.style.setProperty('--stop-y', (yStop - birthY) + "px");
+    hLayer.appendChild(h);
+    setTimeout(() => {
+      let neg = document.createElementNS(svgNS, "text"); neg.setAttribute("x", birthX + (Math.random()*20-10)); neg.setAttribute("y", yStop + (Math.random()*10)); neg.setAttribute("fill", "#0033cc"); neg.setAttribute("class", "charge neg-charge"); neg.textContent = "−"; cLayer.appendChild(neg);
+      let pos = document.createElementNS(svgNS, "text"); pos.setAttribute("x", 50 + Math.random()*700); pos.setAttribute("y", 40 + Math.random()*40); pos.setAttribute("fill", "#cc0000"); pos.setAttribute("class", "charge pos-charge"); pos.textContent = "+"; cLayer.appendChild(pos);
+    }, 5900);
+    if(hLayer.children.length > 400) hLayer.removeChild(hLayer.firstChild);
+    const n = document.querySelectorAll('.neg-charge'); if(n.length > 150) cLayer.removeChild(n[0]);
+    const p = document.querySelectorAll('.pos-charge'); if(p.length > 150) cLayer.removeChild(p[0]);
+  }, 400);
+
+  setTimeout(() => {
+    document.querySelectorAll('.elec').forEach(e => e.classList.add('repelled'));
+    document.getElementById('guiaInduccion').classList.add('visible');
+  }, 15000);
+
+  setTimeout(() => {
+    document.getElementById('guiaDescarga').classList.add('visible');
+    document.getElementById('btnManual').disabled = false;
+    document.getElementById('autoOn').disabled = false;
+    document.getElementById('autoOff').disabled = false;
+    document.getElementById('panelTitulo').textContent = "Control de Descargas";
+    document.getElementById('autoOn').click(); 
+  }, 25000);
+
+  function lanzarRayo() {
+    if (rayoActivo) return; 
+    rayoActivo = true;
+
+    const groundY = window.innerHeight - (window.innerHeight * 0.14);
+    const encuentroY = groundY - 70; 
+    const encuentroX = (window.innerWidth / 2) + (Math.random() - 0.5) * 400;
+    const sueloX = encuentroX + (Math.random() * 80 - 40);
+
+    let x = (window.innerWidth / 2) + (Math.random() - 0.5) * 200;
+    let y = 280; 
+    let puntosTrazador = [[x, y]];
+    
+    let puntosConectorActuales = [[sueloX, groundY]];
+    let conectorVisual = document.createElementNS(svgNS, "polyline");
+    conectorVisual.setAttribute("class", "conector-positivo");
+    gLayer.appendChild(conectorVisual);
+
+    function paso(cx, cy) {
+      let nx = cx + (encuentroX - cx) * 0.15 + (Math.random() - 0.5) * 45;
+      let ny = cy + 22;
+
+      if (ny > groundY - 180) { 
+        let ultimoP = puntosConectorActuales[puntosConectorActuales.length - 1];
+        let ncx = ultimoP[0] + (encuentroX - ultimoP[0]) * 0.3 + (Math.random() - 0.5) * 20;
+        let ncy = ultimoP[1] - 15;
+        if (ncy < encuentroY) ncy = encuentroY;
+        puntosConectorActuales.push([ncx, ncy]);
+        conectorVisual.setAttribute("points", puntosConectorActuales.map(p => p.join(",")).join(" "));
+      }
+
+      if (ny >= encuentroY) {
+        puntosTrazador.push([encuentroX, encuentroY]);
+        let trayectoriaFinal = [...puntosTrazador, ...[...puntosConectorActuales].reverse()];
+        
+        let rayo = document.createElementNS(svgNS, "polyline");
+        rayo.setAttribute("points", trayectoriaFinal.map(p => p.join(",")).join(" "));
+        rayo.setAttribute("class", "rayo-linea");
+        gLayer.appendChild(rayo);
+
+        document.getElementById('flashOverlay').style.opacity = "1";
+        setTimeout(() => {
+          document.getElementById('flashOverlay').style.transition = "opacity 0.6s";
+          document.getElementById('flashOverlay').style.opacity = "0";
+          setTimeout(() => {
+            document.querySelectorAll('.trazador-electron').forEach(t => t.remove());
+            conectorVisual.remove();
+            rayo.remove();
+            document.getElementById('flashOverlay').style.transition = "none";
+            rayoActivo = false;
+          }, 400);
+        }, 100);
+        return;
+      }
+
+      puntosTrazador.push([nx, ny]);
+      let e = document.createElementNS(svgNS, "circle");
+      e.setAttribute("cx", nx); e.setAttribute("cy", ny); e.setAttribute("r", "2.5");
+      e.setAttribute("class", "trazador-electron");
+      gLayer.appendChild(e);
+
+      setTimeout(() => paso(nx, ny), 120);
+    }
+    paso(x, y);
+  }
+
+  document.getElementById('btnManual').onclick = lanzarRayo;
+  document.getElementById('autoOn').onclick = () => {
+    if (!autoId) autoId = setInterval(lanzarRayo, 5000);
+    document.getElementById('autoOn').classList.add('active');
+    document.getElementById('autoOff').classList.remove('active');
+  };
+  document.getElementById('autoOff').onclick = () => {
+    clearInterval(autoId); autoId = null;
+    document.getElementById('autoOn').classList.remove('active');
+    document.getElementById('autoOff').classList.add('active');
+  };
+</script>
+</body>
+</html>
