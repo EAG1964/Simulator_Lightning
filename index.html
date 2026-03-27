@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Simulación Tormenta: El Rayo con Conector</title>
+<title>Storm Simulation: The Lightning Strike</title>
 <style>
   body { margin: 0; background-color: #9eb1bb; overflow: hidden; height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; }
   
-  /* --- TÍTULO PRINCIPAL --- */
+  /* --- MAIN TITLE --- */
   .titulo-principal {
     position: absolute;
     top: 15px;
@@ -21,7 +21,7 @@
     text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
   }
 
-  /* --- CUADROS DE TEXTO (GUIAS) --- */
+  /* --- TEXT BOXES (GUIDES) --- */
   .cuadro-guia {
     position: absolute;
     width: 220px; 
@@ -38,7 +38,7 @@
   .cuadro-guia li { opacity: 0; }
   .visible li { animation: aparecerFrase 0.8s forwards; }
 
-  /* Delays Guía 1 */
+  /* Guide 1 Delays */
   .guia-alta li:nth-child(1) { animation-delay: 1s; }
   .guia-alta li:nth-child(2) { animation-delay: 4s; }
   .guia-alta li:nth-child(3) { animation-delay: 7s; }
@@ -53,14 +53,14 @@
   .guia-baja { bottom: 16vh; left: 20px; border-left: 5px solid #ff3333; opacity: 0; transition: opacity 1.5s; }
   .guia-baja.visible { opacity: 1; }
 
-  /* --- GUIA 3 --- */
+  /* --- GUIDE 3 --- */
   .guia-derecha-baja { bottom: 16vh; right: 20px; border-left: 5px solid #ffcc00; opacity: 0; transition: opacity 1.5s; }
   .guia-derecha-baja.visible { opacity: 1; }
   .guia-derecha-baja.visible li:nth-child(1) { animation-delay: 0.5s; }
   .guia-derecha-baja.visible li:nth-child(2) { animation-delay: 2.5s; }
   .guia-derecha-baja.visible li:nth-child(3) { animation-delay: 4.5s; }
 
-  /* --- LEYENDA --- */
+  /* --- LEGEND --- */
   .leyenda-derecha { top: 20px; right: 20px; width: 200px; height: 120px; background: #d0d0d0; border-right: 5px solid #444; padding: 10px; box-sizing: border-box; overflow: hidden; }
   .leyenda-contenedor-items { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .cuadro-guia h4 { margin: 0 0 8px 0; font-size: 11px; border-bottom: 1px solid #999; padding-bottom: 3px; text-transform: uppercase; }
@@ -71,7 +71,7 @@
   .leyenda-item { display: flex; align-items: center; font-size: 8.5px; }
   .leyenda-icon { width: 20px; height: 20px; margin-right: 4px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
 
-  /* --- PANEL DE CONTROL --- */
+  /* --- CONTROL PANEL --- */
   .control-panel {
     position: absolute; top: 150px; right: 20px; width: 200px; background: rgba(230, 230, 230, 0.95); padding: 10px; border-radius: 8px;
     border: 1px solid #999; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3); box-sizing: border-box;
@@ -82,7 +82,7 @@
   .toggle-btn { background: #ccc; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 9px; }
   .toggle-btn.active { background: #007bff; color: white; }
 
-  /* --- ESCENARIO --- */
+  /* --- STAGE --- */
   .ground { position: absolute; bottom: 0; width: 100%; height: 14vh; background: linear-gradient(to bottom, #8d775f, #6b5a46); z-index: 5; border-top: 3px solid #5a4a3a; }
   .cloud-container { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); width: 800px; height: 300px; z-index: 10; }
   .cloud-visual { position: absolute; width: 100%; height: 100%; background: radial-gradient(ellipse at 30% 40%, #777, transparent 75%), radial-gradient(ellipse at 70% 30%, #666, transparent 75%), linear-gradient(to bottom, #888, #555); border-radius: 50% 50% 40% 40% / 60% 60% 35% 35%; filter: blur(25px); opacity: 0.9; }
@@ -109,7 +109,7 @@
   .trazador-electron { fill: #0000ff; filter: drop-shadow(0 0 2px #fff); }
   #flashOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 200; }
 
-  /* --- LICENCIA (CENTRADA EN EL SUELO) --- */
+  /* --- LICENSE --- */
   .licencia-bloque { 
     position: absolute; bottom: 10px; left: 0; width: 100%; 
     color: #ccc; font-size: 11px; text-align: center; z-index: 150; 
@@ -121,81 +121,81 @@
 <body>
 
 <div id="flashOverlay"></div>
-<div class="titulo-principal">EL RAYO</div>
+<div class="titulo-principal">THE LIGHTNING</div>
 
 <div class="cuadro-guia guia-alta visible">
-  <h4>1. Electrización de la Nube por <span class="rojo">Frotamiento</span></h4>
+  <h4>1. Cloud Electrification by <span class="rojo">Friction</span></h4>
   <ul>
-    <li><span class="bold">Subida:</span> El aire cálido eleva gotas y cristales ligeros.</li>
-    <li><span class="bold">Origen:</span> Las gotas se congelan sobre los cristales → nace el <span class="rojo">granizo</span>.</li>
-    <li><span class="bold">Choque:</span> El granizo cae y choca con los cristales que suben.</li>
-    <li><span class="bold">Carga (−):</span> El granizo gana electrones y baja a la base de la nube.</li>
-    <li><span class="bold">Carga (+):</span> Los cristales pierden electrones y suben a la cima.</li>
+    <li><span class="bold">Updraft:</span> Warm air lifts light droplets and crystals.</li>
+    <li><span class="bold">Origin:</span> Droplets freeze onto crystals → <span class="rojo">graupel</span> is born.</li>
+    <li><span class="bold">Collision:</span> Falling graupel hits rising ice crystals.</li>
+    <li><span class="bold">Charge (−):</span> Graupel gains electrons and falls to the base.</li>
+    <li><span class="bold">Charge (+):</span> Crystals lose electrons and rise to the top.</li>
   </ul>
 </div>
 
 <div class="cuadro-guia guia-baja" id="guiaInduccion">
-  <h4>2. Electrización del Suelo por <span class="rojo">Inducción</span></h4>
+  <h4>2. Ground Electrification by <span class="rojo">Induction</span></h4>
   <ul>
-    <li><span class="bold">Repulsión:</span> La base negativa de la nube repele los electrones del suelo.</li>
-    <li><span class="bold">Movimiento:</span> Los electrones huyen hacia capas profundas.</li>
-    <li><span class="bold">Superficie:</span> El suelo queda con carga <span class="bold">Positiva (+)</span>.</li>
+    <li><span class="bold">Repulsion:</span> The negative cloud base repels electrons on the ground.</li>
+    <li><span class="bold">Movement:</span> Electrons flee to deeper soil layers.</li>
+    <li><span class="bold">Surface:</span> The ground is left with a <span class="bold">Positive (+)</span> charge.</li>
   </ul>
 </div>
 
 <div class="cuadro-guia guia-derecha-baja" id="guiaDescarga">
-  <h4>3. La Descarga Eléctrica (<span class="rojo">Rayo</span>)</h4>
+  <h4>3. The Electric Discharge (<span class="rojo">Lightning</span>)</h4>
   <ul>
-    <li><span class="bold">Trazador (-):</span> Baja en zigzag buscando el camino más corto.</li>
-    <li><span class="bold">Conector (+):</span> Sube desde el suelo para cerrar el circuito.</li>
-    <li><span class="bold">Encuentro:</span> Al unirse, el rayo sigue la trayectoria de ambos canales.</li>
+    <li><span class="bold">Stepped Leader (-):</span> Descends in zigzags seeking the easiest path.</li>
+    <li><span class="bold">Upward Streamer (+):</span> Rises from the ground to complete the circuit.</li>
+    <li><span class="bold">Connection:</span> Once they meet, the main strike follows their combined path.</li>
   </ul>
 </div>
 
 <div class="cuadro-guia leyenda-derecha">
-  <h4>Leyenda</h4>
+  <h4>Legend</h4>
   <div class="leyenda-contenedor-items">
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="14" height="14" viewBox="0 0 6 6"><polygon points="3,0.5 3.5,2 5,2 3.8,3 4.3,4.5 3,3.5 1.7,4.5 2.2,3 1,2 2.5,2" fill="#fff" stroke="#999" stroke-width="0.1" /></svg></div>
-      <span>Cristal</span>
+      <span>Crystal</span>
     </div>
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="#0066ff" /></svg></div>
-      <span>Gota</span>
+      <span>Droplet</span>
     </div>
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#fff" stroke="#aaa" stroke-width="1"/></svg></div>
-      <span>Granizo</span>
+      <span>Graupel</span>
     </div>
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="16" height="16"><circle cx="8" cy="8" r="6" stroke="#ff3333" fill="none" stroke-width="1"/><text x="8" y="11" fill="#ff3333" font-size="9" text-anchor="middle" font-family="Arial" font-weight="bold">+</text></svg></div>
-      <span>Núcleo</span>
+      <span>Nucleus</span>
     </div>
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="14" height="14"><circle cx="7" cy="7" r="2.5" fill="#0000ff" /></svg></div>
-      <span>Electrón</span>
+      <span>Electron</span>
     </div>
     <div class="leyenda-item">
       <div class="leyenda-icon"><svg width="20" height="20">
         <circle cx="6" cy="10" r="5" stroke="url(#tempGradient)" stroke-width="1.5" fill="none" stroke-dasharray="2 1" />
         <circle cx="14" cy="10" r="5" stroke="url(#tempGradient)" stroke-width="1.5" fill="none" stroke-dasharray="2 1" />
       </svg></div>
-      <span>Convección</span>
+      <span>Convection</span>
     </div>
   </div>
 </div>
 
 <div class="control-panel">
-  <h4 id="panelTitulo">Descargas (Bloqueado)</h4>
-  <button class="btn-generar" id="btnManual" disabled>⚡ GENERAR RAYO</button>
+  <h4 id="panelTitulo">Discharges (Locked)</h4>
+  <button class="btn-generar" id="btnManual" disabled>⚡ GENERATE LIGHTNING</button>
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:9px;">
-    <span>Auto-Repetición:</span>
+    <span>Auto-Repeat:</span>
     <div>
       <button class="toggle-btn" id="autoOn" disabled>ON</button>
       <button class="toggle-btn active" id="autoOff" disabled>OFF</button>
     </div>
   </div>
-  <button class="btn-generar" style="border-color:#ffc107; color:#856404;" onclick="location.reload()">REINICIAR</button>
+  <button class="btn-generar" style="border-color:#ffc107; color:#856404;" onclick="location.reload()">RESTART</button>
 </div>
 
 <div class="ground"></div>
@@ -218,7 +218,7 @@
 </div>
 
 <div class="licencia-bloque">
-  <p>Author: <strong>EAG1964</strong> | 2026 | <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es" target="_blank">License CC BY-NC-SA 4.0</a></p>
+  <p>Author: <strong>EAG1964</strong> | 2026 | <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank">License CC BY-NC-SA 4.0</a></p>
 </div>
 
 <script>
@@ -286,7 +286,7 @@
     document.getElementById('btnManual').disabled = false;
     document.getElementById('autoOn').disabled = false;
     document.getElementById('autoOff').disabled = false;
-    document.getElementById('panelTitulo').textContent = "Control de Descargas";
+    document.getElementById('panelTitulo').textContent = "Discharge Controls";
     document.getElementById('autoOn').click(); 
   }, 25000);
 
